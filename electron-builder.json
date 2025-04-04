@@ -1,0 +1,10 @@
+{
+    "appId":"com.bastiasa.brailletranslator",
+    "files":["dist-electron", "dist-react"],
+
+    "icon":"b:\\projects\\android\\BraileTransformer\\logo.png",
+
+    "win":{
+        "target":["portable"]
+    }
+}
