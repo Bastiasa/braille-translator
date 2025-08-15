@@ -10,6 +10,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     title: "Braille Translator",
     backgroundColor: "#000000",
+    minWidth: 500,
+    minHeight: 500,
     webPreferences: {
       devTools: isDevelopment,
     },

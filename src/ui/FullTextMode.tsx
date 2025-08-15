@@ -1,6 +1,8 @@
 import { useRef } from "react";
-import { useAppContext } from "./App";
+import { say, useAppContext } from "./App";
 import soundIcon from "./assets/sound_icon.svg";
+
+
 
 
 export function FullTextMode({ visible = false }: { visible?: boolean }) {
@@ -24,8 +26,7 @@ export function FullTextMode({ visible = false }: { visible?: boolean }) {
     }
     
     function onHearButtonClicked() {
-        const utterance = new SpeechSynthesisUtterance(brailleText);
-        window.speechSynthesis.speak(utterance);
+        say(brailleText);
     }
 
     return (

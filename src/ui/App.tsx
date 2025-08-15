@@ -1,10 +1,10 @@
-import { createContext, ReactNode, useContext, useRef, useState } from 'react'
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { FullTextMode } from './FullTextMode';
 import { LettersMode } from './LettersMode';
 import { BrailleUtils } from './BrailleUtils';
 
-enum AppMode {
+export enum AppMode {
   MODE_FULL_TEXT,
   MODE_LETTER_BY_LETTER,
 }
@@ -18,7 +18,7 @@ interface AppContextInterface {
 
 }
 
-export const AppContext = createContext<AppContextInterface|null>(null);
+export const AppContext = createContext<AppContextInterface | null>(null);
 
 export function useAppContext() {
   return useContext(AppContext) as AppContextInterface;
@@ -26,7 +26,7 @@ export function useAppContext() {
 
 function AppContextProvider({ children }: { children?: ReactNode }) {
 
-  const [mode, setModeState] = useState<AppMode>(AppMode.MODE_FULL_TEXT);
+  const [mode, setModeState] = useState<AppMode>(AppMode.MODE_LETTER_BY_LETTER);
   const [brailleText, setBrailleText] = useState<string>("");
 
   const setMode: React.Dispatch<React.SetStateAction<AppMode>> = (newMode) => {
@@ -39,12 +39,13 @@ function AppContextProvider({ children }: { children?: ReactNode }) {
   function playAudio(audioPath: string) {
 
     if (!audioReference.current) {
+      console.warn("Audio reference doesn't have an instance. This is commonly because the call was done when the DOM is not loaded.");
       return;
     }
 
     const audioElement = audioReference.current;
 
-    audioElement.pause();
+    audioElement.pause()
     audioElement.src = audioPath;
     audioElement.play();
 
@@ -71,6 +72,13 @@ function AppContextProvider({ children }: { children?: ReactNode }) {
   );  
 }
 
+export function say(text:string) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  window.speechSynthesis.speak(utterance);
+  return utterance;
+}
+
+
 function getTextSize(text:string, font:string):{width:number, height:number} {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -83,13 +91,36 @@ function getTextSize(text:string, font:string):{width:number, height:number} {
     };
 }
 
+function useWindowSize() {
+  const [size, setSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  useEffect(() => {
+    function handleResize() {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return size;
+}
+
 function BrailleDrawer() {
 
   const { brailleText } = useAppContext();
+  const WINDOW_SIZE = useWindowSize();
 
   const SHOWING_TEXT = BrailleUtils.convertText(brailleText.toLowerCase());
-
   const FONT_SIZE = (window.innerWidth) / getTextSize(SHOWING_TEXT, "Arial 12px").width;
+
+  WINDOW_SIZE;
 
   return (
     <div style={{
